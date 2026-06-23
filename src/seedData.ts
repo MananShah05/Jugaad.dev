@@ -1,0 +1,825 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { Hack } from './types';
+
+export const SEED_HACKS: Hack[] = [
+  // --- ₹0 Infrastructure ---
+  {
+    id: "h1",
+    slug: "host-nextjs-free-vercel-neon-clerk",
+    title: "Vercel + Neon + Clerk ₹0 Ultimate Stack",
+    summary: "A production-grade combination that easily handles up to 10k MAU without spending a single rupee.",
+    body: `This is the holy grail for college hackathons or solo founders testing out clean MVPs in India. By combining Vercel (frontend & edge logic), Neon (serverless Postgres with 0.5 GB storage), and Clerk (10,000 monthly active users free), you build a fully authenticated, fully relational app for free.
+    
+### Setup Sequence
+1. Deploy UI on **Vercel** via GitHub integration.
+2. Spin up a Postgres database on **Neon** in their US-East region (minimal latency or use European regions if close).
+3. Integrate **Clerk** SDK by wrapping your app in \`<ClerkProvider>\`. Configure GitHub/Google OAuth with 1-click.`,
+    category: "₹0 Infrastructure",
+    tags: ["vercel", "neon", "clerk", "database", "nextjs"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 142,
+    author: "jugaad_god",
+    createdAt: "2026-06-20T10:00:00Z",
+    gotcha: "Neon free tier database automatically pauses after 7 days of inactivity. Your first request after active pause takes 4-10 seconds to spin up.",
+    code: `// .env.local example
+DATABASE_URL="postgresql://neondb_owner:passwd@ep-cool-river-a5.us-east-2.aws.neon.tech/neondb?sslmode=require"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."`
+  },
+  {
+    id: "h2",
+    slug: "free-cron-jobs-github-actions",
+    title: "Free Persistent Cron Jobs via GitHub Actions",
+    summary: "Bypass paid cron schedules. Execute database backups, webhook pings, or data syncs for ₹0.",
+    body: `Need to ping your API every hour or sync database records? Paid schedulers are expensive, and local machines sleep.
+    
+You can abuse **GitHub Actions workflow schedules** (configured via cron syntax) to perform continuous tasks. Because GitHub provides 2,000 free runner minutes per month, you get about 33 hours of runtime. A simple cURL process takes 3 seconds, meaning you could run it literally every 5 minutes and never exceed your limit!`,
+    category: "₹0 Infrastructure",
+    tags: ["github", "cron", "automation", "api"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 98,
+    author: "harsh_hacks",
+    createdAt: "2026-06-21T01:00:00Z",
+    gotcha: "GitHub Actions schedule cron is subject to delayed executions. It is not guarantee-precise to the millisecond; delays can range from 3 to 20 minutes under heavy loads.",
+    code: `# .github/workflows/cron.yml
+name: Ping API Cron
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Every 30 mins
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Keeper Function
+        run: |
+          curl -X POST "https://my-app.vercel.app/api/cron-ping" \\
+          -H "Authorization: Bearer \${{ secrets.CRON_SECRET }}"`
+  },
+  {
+    id: "h3",
+    slug: "upstash-free-redis-replacement",
+    title: "Free Redis Alternative via Upstash",
+    summary: "Implement lightning-fast rate limiting, user caching, or active sessions without hosting a Redis server.",
+    body: `If your express server or Next.js middleware is getting bombarded, storing rate-limiting state in standard RAM causes crashes on crashes.
+    
+**Upstash** provides serverless Redis with a free tier of **10,000 requests per day**. It is accessed over REST, which means it plays perfectly with standard serverless and edge environments (Vercel, Cloudflare, etc.) without keeping TCP sockets open.`,
+    category: "₹0 Infrastructure",
+    tags: ["upstash", "redis", "cache", "rate-limit"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 85,
+    author: "anshul_dev",
+    createdAt: "2026-06-19T08:30:00Z",
+    gotcha: "Once you hit 10,000 daily requests, Upstash blocks operations or returns errors rather than failing open. Set up client-side fallbacks in catch blocks.",
+    code: `import { Redis } from "@upstash/redis"
+
+const redis = new Redis({
+  url: 'https://useful-snail-4321.upstash.io',
+  token: 'YOUR_UPSTASH_TOKEN',
+})
+
+// Rate limiter helper
+export async function isRateLimited(ip: string) {
+  try {
+    const key = \`rate_limit:\${ip}\`;
+    const count = await redis.incr(key);
+    if (count === 1) {
+      await redis.expire(key, 60); // 1 minute window
+    }
+    return count > 60; // 60 requests per minute limit
+  } catch (err) {
+    return false; // Fall open safely if rate limiter fails
+  }
+}`
+  },
+  {
+    id: "h4",
+    slug: "resend-free-emails",
+    title: "Send 3,000 Automated Emails/Month for ₹0",
+    summary: "Ditch SendGrid and SMTP headaches. Resend's API lets you fire transactional emails with React elements.",
+    body: `Sending OTPs or onboarding emails usually hits a paywall or spam filters.
+    
+**Resend** offers an incredibly modern developer experience and allows **3,000 free emails per month** (100 per day max limit) on custom domains. Over and above, you can write layouts beautifully with standard HTML or via **React Email**.`,
+    category: "₹0 Infrastructure",
+    tags: ["resend", "email", "api", "auth"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 112,
+    author: "sneha_codes",
+    createdAt: "2026-06-18T10:00:00Z",
+    gotcha: "The free tier daily limit is strictly 100 emails. If your userbase surges, you must buy a higher package or cascade to another free API key (cascade script below).",
+    code: `import { Resend } from 'resend';
+
+export async function sendOTPEmail(email: string, otp: string) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  
+  await resend.emails.send({
+    from: 'Jugaad.dev <noreply@submission.jugaad.dev>',
+    to: [email],
+    subject: 'Your OTP Code',
+    html: \`<p>Your debug code is: <strong>\${otp}</strong>. Keep hacking!</p>\`
+  });
+}`
+  },
+  {
+    id: "h5",
+    slug: "vercel-edge-qstash-queues",
+    title: "Free Async Background Jobs with Edge + QStash",
+    summary: "Run long-term background processing on serverless targets without server timeouts.",
+    body: `Serverless environments (like Vercel serverless functions) have a strict 10-15 second timeout limit on free tiers. If you are scraping a page or processing a heavy file, your request terminates halfway.
+    
+**The Workaround:** Break tasks into small chunks, queue them with **Upstash QStash** (free rate limit is amazing), and let QStash invoke multiple edge functions concurrently. Each chunk runs individually, so timeouts are completely bypassed!`,
+    category: "₹0 Infrastructure",
+    tags: ["qstash", "upstash", "serverless", "queues"],
+    difficulty: "medium",
+    status: "active",
+    upvotes: 76,
+    author: "amit_sharma",
+    createdAt: "2026-06-15T04:20:00Z",
+    gotcha: "QStash sends requests to public URLs. You MUST secure your edge endpoints with an authentication signature to prevent external bad actors from triggering them.",
+    code: `import { Receiver } from "@upstash/qstash";
+
+const receiver = new Receiver({
+  currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY!,
+  nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY!,
+});
+
+export default async function handler(req: any, res: any) {
+  const isValid = await receiver.verify({
+    signature: req.headers["upstash-signature"],
+    body: JSON.stringify(req.body),
+  });
+  
+  if (!isValid) return res.status(401).send("Unauthorized");
+  
+  // Do async work here...
+  res.status(200).json({ success: true });
+}`
+  },
+  {
+    id: "h6",
+    slug: "neon-db-activity-keep-awake-cron",
+    title: "Neon DB Keep-Awake Workaround",
+    summary: "Prevent Neon serverless databases from pausing, avoiding cold-starts during active pitches or demos.",
+    body: `Neon's database-as-a-service free tier spins down computation after 7 days of inactivity. When a recruiter or hackathon judge opens your app on day 8, your database takes ~10 seconds to respond, driving them to close the tab.
+    
+**The Workaround:** Write a simple cron scheduled event (either through a free GitHub Action trigger, Cron-Job.org, or Vercel cron) to execute a simple query (e.g. \`SELECT 1;\`) once every 3 days. This fully prevents Neon compute from entering active sleep.`,
+    category: "₹0 Infrastructure",
+    tags: ["neon", "cron", "postgres", "automation"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 210,
+    author: "jugaad_god",
+    createdAt: "2026-06-22T02:00:00Z",
+    gotcha: "Abusing too many connections via constant queries will consume the monthly free compute hours allowance. Keep pings spaced at least 24-72 hours apart.",
+    code: `// Express server or Next.js route handler pinged by a free cron
+import { Client } from 'pg';
+
+export async function GET() {
+  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  await client.connect();
+  const res = await client.query('SELECT 1');
+  await client.end();
+  return Response.json({ status: "alive", payload: res.rowCount });
+}`
+  },
+  {
+    id: "h7",
+    slug: "cloudflare-r2-free-file-hosting",
+    title: "Free Uncapped Egress Object Storage (R2)",
+    summary: "Ditch AWS S3's exorbitant data transfer fees. Use Cloudflare R2's 10GB free tier to store images/PDFs.",
+    body: `AWS S3 charges you pennies for storage, but breaks your back on 'egress fees' (when users download files). If your app gets 5,000 PDF views, you are hit with a sizeable bill.
+    
+**The Jugaad:** **Cloudflare R2** provides fully compatible S3 APIs, offering **10GB free monthly storage** with absolutely **zero egress fees**. This is literally the best solution for hosting assets, profiles, and media clips.`,
+    category: "₹0 Infrastructure",
+    tags: ["cloudflare", "r2", "s3", "storage"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 119,
+    author: "rahul_v",
+    createdAt: "2026-06-10T14:15:00Z",
+    gotcha: "Setting up custom subdomains on R2 requires verifying a domain on Cloudflare DNS. Use this to avoid complex CORS configurations.",
+    code: `import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+
+const s3 = new S3Client({
+  region: "auto",
+  endpoint: \`https://\${process.env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com\`,
+  credentials: {
+    accessKeyId: process.env.CF_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.CF_SECRET_ACCESS_KEY!,
+  },
+});`
+  },
+  {
+    id: "h8",
+    slug: "better-uptime-free-pings",
+    title: "Track Outages Free with Better Uptime",
+    summary: "Receive instant Telegram notifications or phone alerts when your replica servers crash.",
+    body: `When hosting your projects on free compute providers, services will randomly crash or go offline. Unless you check manually, you will never know until people start complaining.
+    
+**Better Stack (Uptime)** offers high-quality free URL monitoring. You can configure up to **10 monitors** checking your site every 2-3 minutes. If it fails, they can route alerts directly to your phone.`,
+    category: "₹0 Infrastructure",
+    tags: ["monitoring", "uptime", "devops", "alerts"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 61,
+    author: "riya_tech",
+    createdAt: "2026-06-05T12:00:00Z",
+    gotcha: "Avoid pointing Better Stack directly to cold-starting servers (e.g. Render/Neon). Heavy pinging can prevent sleep modes and consume compute limits.",
+    code: `// Standard endpoint to expose to uptime service
+app.get('/api/healthz', (req, res) => {
+  res.status(200).send("TERMINAL_ONLINE_200");
+});`
+  },
+
+  // --- API Workarounds ---
+  {
+    id: "h9",
+    slug: "cors-anywhere-3-lines-nextjs",
+    title: "CORS Bypass Proxy in 3 Lines of Code",
+    summary: "Bypass CORS blocks from strict API providers without building complex backend systems.",
+    body: `You are trying to fetch pricing or live weather statistics from a third-party server directly inside standard React, but you get a blocked error: \`Access to fetch at... blocked by CORS policy\`.
+    
+Instead of setting up node proxies, you can make your own routing handler act as a middleman. Since servers do not enforce CORS policies (only browsers do), fetching through a server handler avoids the browser block entirely!`,
+    category: "API Workarounds",
+    tags: ["cors", "nextjs", "proxy", "api"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 254,
+    author: "harsh_hacks",
+    createdAt: "2026-06-22T08:00:00Z",
+    gotcha: "If you send large images or heavy JSON through your server router, you will run into Vercel's free serverless function payload execution limit (4.5 MB body limit).",
+    code: `// src/app/api/proxy/route.ts
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const targetUrl = searchParams.get('url');
+  if (!targetUrl) return new Response('Missing target URL', { status: 400 });
+  const response = await fetch(targetUrl);
+  return new Response(response.body, { headers: { "Access-Control-Allow-Origin": "*" } });
+}`
+  },
+  {
+    id: "h10",
+    slug: "bypass-rate-limits-rotating-keys",
+    title: "Rate Limit Bypass with Secret Cascade Rotation",
+    summary: "Handle heavy traffic surges by automatically rotating through backup API keys when an key blocks.",
+    body: `When utilizing free-tier third-party APIs (like Weather APIs, currency converters, or search indices), you get a minor threshold (e.g., 100 queries a minute).
+    
+**The Jugaad:** Register multiple accounts on separate email aliases to accumulate keys. Put them in an array inside your env file as a delimited string. Check the response status: if you get a \`429 Rate Limit Exceeded\`, simply shift the current key index to the backup key, retry, and black-list the exhausted key for the next Hour!`,
+    category: "API Workarounds",
+    tags: ["api", "secrets", "workaround", "rate-limiting"],
+    difficulty: "medium",
+    status: "active",
+    upvotes: 112,
+    author: "anshul_dev",
+    createdAt: "2026-06-18T05:00:00Z",
+    gotcha: "Abusing terms of service with mass mock accounts can result in IP blocks. Use this for emergency backup failovers rather than high volume databases.",
+    code: `const apiKeys = process.env.API_KEYS_CSV?.split(',') || [];
+let activeKeyIndex = 0;
+
+export async function fetchWithFallback(url: string, attempts = 0): Promise<any> {
+  if (attempts >= apiKeys.length) throw new Error("All cascade keys exhausted.");
+  const currentKey = apiKeys[activeKeyIndex];
+  const response = await fetch(\`\${url}?key=\${currentKey}\`);
+  
+  if (response.status === 429) {
+    activeKeyIndex = (activeKeyIndex + 1) % apiKeys.length; // Rotate
+    return fetchWithFallback(url, attempts + 1);
+  }
+  return response.json();
+}`
+  },
+  {
+    id: "h11",
+    slug: "groq-fast-free-llm-api",
+    title: "Groq High-Speed Free LLM API Workaround",
+    summary: "Bypass ultra-slow OpenAI/Claude rate limits in India. Perform Llama-3 parsing with extreme speed.",
+    body: `If your college projects require live LLM generations, standard OpenAI API requests will eat up your nominal $5 credits in 2 days. 
+    
+**Groq** offers developer accounts with exceptionally high-speed access to Llama 3 models (70B, 8B) for **₹0** (within their generous free tier limits). It is fully compatible with standard OpenAI SDK structures, meaning a single line edit transitions your codebase to Groq.`,
+    category: "API Workarounds",
+    tags: ["groq", "ai", "llama3", "free-tier"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 201,
+    author: "sneha_codes",
+    createdAt: "2026-06-19T11:00:00Z",
+    gotcha: "Groq free rates have limit structures on tokens per minute (TPM). Add dynamic delay pacing or rate limit queues if batching long files.",
+    code: `import { OpenAI } from "openai";
+
+const groq = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1"
+});
+
+const completion = await groq.chat.completions.create({
+  model: "llama3-8b-8192",
+  messages: [{ role: "user", content: "Explain CORS like I am 5." }],
+});`
+  },
+  {
+    id: "h12",
+    slug: "llamaparse-free-pdf-parsing",
+    title: "LlamaParse PDF Text Extraction for Free",
+    summary: "Extract perfectly structured markdown from complex scanned tables or charts without OCR code.",
+    body: `Scanned PDF documents and receipts inside India (like tax forms or bank declarations) are absolute nightmares to parse via standard Python libraries like PDFMiner.
+    
+**LlamaParse** (by LlamaIndex) allows **1,000 free PDF page extractions per day** utilizing their multi-modal parsers. It accurately extracts markdown grids and charts, preserving structures natively.`,
+    category: "API Workarounds",
+    tags: ["pdf", "parsing", "llama-index", "data"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 95,
+    author: "amit_sharma",
+    createdAt: "2026-06-14T03:30:00Z",
+    gotcha: "Heavy files over 100 pages might queue for several minutes on the free path. Recommend breaking files into smaller clusters before pushing to the API pipeline.",
+    code: `// Using standard node-fetch to interact with LlamaParse REST API
+const formData = new FormData();
+formData.append('file', pdfBlob, 'invoice.pdf');
+
+const uploadResponse = await fetch("https://api.llamaindex.ai/v1/parsing/upload", {
+  method: "POST",
+  headers: { "Authorization": \`Bearer \${process.env.LLAMA_CLOUD_API_KEY}\` },
+  body: formData
+});
+const { id: jobId } = await uploadResponse.json();`
+  },
+  {
+    id: "h13",
+    slug: "railway-json-server-instant-mock-api",
+    title: "Railway + json-server Instant Mock APIs",
+    summary: "Deploy a full REST API populated with custom dummy products or user records in 60 seconds.",
+    body: `Frontend developers often waste 3 days building express routes, model database hooks, and routers just to fetch some sample user records or cards.
+    
+**The Jugaad:** Write a simple \`db.json\` file, configure **json-server**, and deploy it with 1 click to Railway's free workspace. It automatically provisions GET, POST, PUT, and DELETE endpoints with write storage!`,
+    category: "API Workarounds",
+    tags: ["railway", "json-server", "mock", "api"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 110,
+    author: "riya_tech",
+    createdAt: "2026-06-12T02:00:00Z",
+    gotcha: "Railway free tire will expire container quotas if left active. If so, migrate the same db.json to a free Vercel Edge Server or Glitch server to bypass active timers.",
+    code: `// db.json
+{
+  "hacks": [
+    { "id": 1, "title": "Bypass Webhook Auth", "stars": 42 }
+  ]
+}
+
+// Start with json-server package on port 3000
+// $ json-server --watch db.json --port 3000`
+  },
+  {
+    id: "h14",
+    slug: "webhook-tunneling-ngrok-vs-cloudflared",
+    title: "Free Tunneling: Cloudflare Tunnel vs. ngrok",
+    summary: "Expose high-throughput local webhook receivers of Razorpay or WhatsApp to public portals without limits.",
+    body: `Testing webhook endpoints on local dev folders requires a proxy tunnel. **ngrok** is the default standard but severely restricts you with connection limits and dynamic URLs that change on restart, requiring manual webhook updates in Razorpay dashboards.
+    
+**The Custom Hack:** Use **Cloudflare Tunnel (cloudflared)**! It is entirely free, allows persistent reserved subdomains, bypasses limits, and requires zero registration credentials.`,
+    category: "API Workarounds",
+    tags: ["cloudflare", "tunnels", "ngrok", "webhooks"],
+    difficulty: "medium",
+    status: "active",
+    upvotes: 125,
+    author: "jugaad_god",
+    createdAt: "2026-06-11T09:40:00Z",
+    gotcha: "Installing Cloudflare daemon requires minor console configurations on terminal directories. Once configured, execution stays secure 24/7.",
+    code: `# Expose local server on port 3000 recursively
+# Cloudflare (Requires domain configured on Cloudflare account)
+cloudflared tunnel --url http://localhost:3000
+
+# ngrok Alternative
+ngrok http 3000`
+  },
+
+  // --- Payment Gateway Jugaad ---
+  {
+    id: "h15",
+    slug: "razorpay-test-mode-hackathons",
+    title: "KYC-Free Razorpay Test Mode for Prototypes",
+    summary: "Simulate cash collection, OTPs, and bank transactions without registering a business.",
+    body: `Integrating payment systems in Indian portals requires severe documentation (PAN, GSTIN, Bank Audits). If you are building a hackathon prototype over a weekend, you cannot get actual authorization keys.
+    
+By activating **Razorpay Test Mode**, you bypass business reviews completely. You can generate custom payment pages and collect test mock funds (UPI, simulated net banking). It acts exactly like the production gateway with zero risk or regulatory roadblocks!`,
+    category: "Payment Gateway Jugaad",
+    tags: ["razorpay", "payment", "proto", "testing"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 198,
+    author: "harsh_hacks",
+    createdAt: "2026-06-22T04:45:00Z",
+    gotcha: "Never accept real card details in test inputs. The mock flow works perfectly but alerts users with a clear header indicating Test environment variables.",
+    code: `<!-- Include Razorpay Checkout script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+const options = {
+  key: "rzp_test_YOUR_TEST_KEY_ID_HERE", // Mock key
+  amount: 50000, // ₹500 in paise
+  name: "Jugaad.dev Pro",
+  handler: function(response) {
+    alert("Mock payment successful: " + response.razorpay_payment_id);
+  }
+};
+const rzp = new Razorpay(options);
+rzp.open();
+</script>`
+  },
+  {
+    id: "h16",
+    slug: "cashfree-vs-razorpay-comparison",
+    title: "Cashfree vs Razorpay: The ₹0 KYC Comparison",
+    summary: "Which gateway provides faster developer onboarding and minimal transactional percentages for Indian hackers.",
+    body: `Razorpay has strict registration gates and often suspends new registrations. **Cashfree Payments** provides alternative portals that are often quicker to authorize for small projects under ₹1 Lakh/month volume.
+    
+Furthermore, Cashfree fee structures are competitive, and their API keys support deep-nested UPI intents which easily integrate with local flutter or android views.`,
+    category: "Payment Gateway Jugaad",
+    tags: ["cashfree", "razorpay", "fees", "kyc"],
+    difficulty: "medium",
+    status: "active",
+    upvotes: 89,
+    author: "amit_sharma",
+    createdAt: "2026-06-14T05:00:00Z",
+    gotcha: "Cashfree API responses occasionally diverge from standard camelCase patterns. Read JSON payloads carefully and log output parameters.",
+    code: `// Typical Cashfree payment request structure
+const requestData = {
+  order_id: "order_1294812",
+  order_amount: 199.00,
+  order_currency: "INR",
+  customer_details: {
+    customer_id: "cust_924",
+    customer_email: "test@jugaad.dev",
+    customer_phone: "9999999999"
+  }
+};`
+  },
+  {
+    id: "h17",
+    slug: "upi-deep-links-no-gateway",
+    title: "₹0 Free Direct Transactions via UPI Deep Links",
+    summary: "Collect peer-to-peer payments instantly without transaction fees, gateways, or KYC.",
+    body: `Standard payment gateways bite off **2-3% + tax** on every checkout transaction, and hold your money for 2-3 calendar business days.
+    
+**The Jugaad:** If your transaction volume is small, you don't need a gateway. You can generate custom **W3C Standard UPI deep-link URLs** and display them as QR codes or clickable mobile hyperlinks. When clicked on a phone, it automatically opens GPay, PhonePe, or Paytm with your VPA (e.g. \`yourname@okaxis\`) and the exact amount pre-filled!`,
+    category: "Payment Gateway Jugaad",
+    tags: ["upi", "qr-code", "payments", "finance"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 312,
+    author: "jugaad_god",
+    createdAt: "2026-06-23T01:00:00Z",
+    gotcha: "UPI deep links do NOT issue automatic webhooks to your server. To verify if a customer actually completed the transfer, they must manually upload a screenshot of their transaction along with the Ref transaction ID (UTR) for server check.",
+    code: `// Generate standard UPI payload string
+export function getUPIUrl(vpa: string, payeeName: string, amount: number, txNote: string) {
+  const urlEncodedName = encodeURIComponent(payeeName);
+  const urlEncodedNote = encodeURIComponent(txNote);
+  
+  // Format: upi://pay?pa=VPA&pn=NAME&am=AMOUNT&cu=INR&tn=NOTE
+  return \`upi://pay?pa=\${vpa}&pn=\${urlEncodedName}&am=\${amount}&cu=INR&tn=\${urlEncodedNote}\`;
+}`
+  },
+  {
+    id: "h18",
+    slug: "handle-razorpay-webhook-signatures",
+    title: "Verify Razorpay Signatures with Standard Express",
+    summary: "Prevent malicious actors from forging successful checkout events in server status handlers.",
+    body: `A classic security failure: developers use a basic webhook route (e.g. \`/api/razorpay-webhook\`) that marks orders as 'PAID' purely by reading the request body. A tech-savvy user can easily send a fake POST request with \`status: "captured"\` and bypass pricing entirely.
+    
+You must verify the Razorpay signature utilizing your Secret Webhook Token.`,
+    category: "Payment Gateway Jugaad",
+    tags: ["razorpay", "webhooks", "security", "node"],
+    difficulty: "medium",
+    status: "active",
+    upvotes: 140,
+    author: "sneha_codes",
+    createdAt: "2026-06-20T12:00:00Z",
+    gotcha: "Ensure you read the request payload as a RAW buffer before checking the SHA256 string. Standard body-parser parsing alters structure, making validation fail.",
+    code: `import crypto from 'crypto';
+
+export function verifyWebhookSignature(
+  rawBody: string, 
+  signatureHeader: string, 
+  webhookSecret: string
+) {
+  const expectedSignature = crypto
+    .createHmac('sha256', webhookSecret)
+    .update(rawBody)
+    .digest('hex');
+    
+  return expectedSignature === signatureHeader;
+}`
+  },
+
+  // --- Mobile / Performance ---
+  {
+    id: "h19",
+    slug: "detect-jio-vs-airtel-low-latency",
+    title: "Asset Downscaling for Slow Networks (Jio/Airtel)",
+    summary: "Detect weak 3G cellular speeds and serve low-res assets dynamically to optimize site loads.",
+    body: `While 5G is expanding, massive chunks of Indian subways and tier-3 towns experience congested mobile hot-spots. Large video hero assets or heavy bundles will freeze app launches.
+    
+**The Jugaad:** Query the native browser **Network Information API**. If standard speeds are sluggish (downlink < 1.5 Mbps or rtt > 400ms), immediately replace high-definition images/sources with lightweight fallbacks.`,
+    category: "Mobile / Performance",
+    tags: ["performance", "jio", "network", "latency"],
+    difficulty: "medium",
+    status: "active",
+    upvotes: 94,
+    author: "riya_tech",
+    createdAt: "2026-06-15T01:30:00Z",
+    gotcha: "The \`navigator.connection\` API is currently not supported on iOS Safari. Make sure to catch failures and default back to standard speed values.",
+    code: `export function useLowBandwidthOptimize() {
+  const conn = (navigator as any).connection;
+  if (!conn) return false;
+  
+  // Detect cellular / slow networks
+  const isSlow = conn.saveData || 
+                 ['slow-2g', '2g', '3g'].includes(conn.effectiveType) ||
+                 conn.downlink < 1.5;
+  return isSlow;
+}`
+  },
+  {
+    id: "h20",
+    slug: "nextjs-image-webp-downsizing",
+    title: "Cut Image Weights 60% Using WebP Formatting",
+    summary: "Maximize load throughputs on old Android phones. Direct Next.js dynamic resizing blocks.",
+    body: `Indian smartphone databases are heavily populated with low-end Android hardware. Serving standard 3MB PNG files causes page stutters and rapid RAM overheads.
+    
+Ensure all graphic static formats are converted into efficient **WebP** formats. The loading payload drops from megabytes to kilobytes!`,
+    category: "Mobile / Performance",
+    tags: ["webp", "nextjs", "android", "compression"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 82,
+    author: "amit_sharma",
+    createdAt: "2026-06-13T10:00:00Z",
+    gotcha: "Ensure your Vercel images configuration does not exceed native execution limits if processing bulk raw photos on demand.",
+    code: `// next.config.js image support optimization
+module.exports = {
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080],
+  },
+}`
+  },
+  {
+    id: "h21",
+    slug: "lazy-load-routes-with-suspense",
+    title: "Bundle Splitting to Lower Page Load Overhead",
+    summary: "Load heavy charting modules or map routes only when requested, saving users data logs.",
+    body: `Importing massive bundle packages at the main module scope drags down initial interaction times. Splitting bundle files based on dynamic router pages is crucial to prevent high bounce rates.
+    
+Use standard **React Lazy** coupled with **Suspense** boundaries to render cards dynamically.`,
+    category: "Mobile / Performance",
+    tags: ["react", "webpack", "lazy-load", "speed"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 75,
+    author: "sneha_codes",
+    createdAt: "2026-06-12T05:00:00Z",
+    gotcha: "Dynamic loading might show blank boxes during rapid tab clicks; ensure styled loaders prevent layout shifts.",
+    code: `import React, { lazy, Suspense } from 'react';
+
+// Dynamically load heavy module
+const HeavyTerminalChart = lazy(() => import('./HeavyTerminalChart'));
+
+function Dashboard() {
+  return (
+    <Suspense fallback={<div className="animate-pulse">Loading Chart...</div>}>
+      <HeavyTerminalChart />
+    </Suspense>
+  );
+}`
+  },
+  {
+    id: "h22",
+    slug: "pwa-offline-mode-low-networks",
+    title: "PWA Offline Mode for Local Commuters",
+    summary: "Enable local caching of previously loaded static assets so users can study documentation or hacks offline.",
+    body: `Train journeys in India are notoriously low-connectivity. If your site needs stable wifi to run, commuters will ignore it. 
+    
+Adding a modern Service Worker to create a **PWA (Progressive Web App)** lets you cache core static files inside local client storage. When the network cuts out, the app continues to display offline.`,
+    category: "Mobile / Performance",
+    tags: ["pwa", "service-worker", "offline", "caching"],
+    difficulty: "cursed",
+    status: "active",
+    upvotes: 115,
+    author: "jugaad_god",
+    createdAt: "2026-06-08T11:20:00Z",
+    gotcha: "Caching bundles indefinitely make it incredibly difficult to push urgent hotfixes. Always integrate a clear caching version-prefix strategy.",
+    code: `// sw.js (Basic Service Worker)
+const CACHE_NAME = 'jugaad-cache-v1';
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      return cached || fetch(event.request).then((network) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, network.clone());
+          return network;
+        });
+      });
+    })
+  );
+});`
+  },
+
+  // --- Interview / Placement ---
+  {
+    id: "h23",
+    slug: "github-readme-profile-recruiter-magnet",
+    title: "The Recruiter-Magnet GitHub README Blueprint",
+    summary: "Format your repository index to force busy HR managers to see your deployed applications immediately.",
+    body: `Recruiters spend an average of 6 seconds scan-checking your projects. Long paragraphs describing your university courses will be immediately glazed over.
+    
+**The Jugaad:** Highlight **active deployed links** in capital display typography right at the top. Use direct mock metrics showing API requests processed, users registered, or database rows active. Visual graphics trigger rapid visual hooks.`,
+    category: "Interview / Placement",
+    tags: ["github", "career", "placement", "resume"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 181,
+    author: "harsh_hacks",
+    createdAt: "2026-06-20T11:00:00Z",
+    gotcha: "Do not embed auto-updating visitor stats that break alignment or display broken pixel badges on mobile views.",
+    code: `# Hi, I build real-world systems 🚀
+
+### 🔥 [Live Application] MY_PROJECT_NAME (https://my-app.vercel.app)
+- **Problem**: Solved direct API CORS blocks.
+- **Scale**: Fast-cached 12,000 hourly hits on Upstash Redis ₹0 tier.`
+  },
+  {
+    id: "h24",
+    slug: "vercel-free-custom-portfolio-domain",
+    title: "Host Professional Custom Domain Portfolio free",
+    summary: "Avoid standard portfolio subdomains; link cheap native extensions to Vercel endpoints without DNS cost.",
+    body: `Presenting recruiters with an official domain (e.g. \`yourname.in\`) communicates high technical maturity. Vercel allows binding custom domains to hosted static routes entirely for free.
+    
+Buy cheap domains on local registration websites for ₹99, configure DNS CNAME targets to point directly, and deploy professional portfolio assets.`,
+    category: "Interview / Placement",
+    tags: ["deployment", "portfolio", "branding", "dns"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 93,
+    author: "riya_tech",
+    createdAt: "2026-06-18T10:00:00Z",
+    gotcha: "Never configure multiple DNS redirection portals simultaneously as certificate generation will fail or get stuck in active loops.",
+    code: `# In DNS registrar console add:
+# Type: CNAME, Name: @, Value: cname.vercel-dns.com`
+  },
+  {
+    id: "h25",
+    slug: "leetcode-burnt-out-anti-cheat",
+    title: "Anti-Burnout 2-Problem Placement Routine",
+    summary: "Prepare for placement seasons with high quality structured Leetcode problems instead of memorizing 800 prompts.",
+    body: `Cramming hundreds of abstract tree algorithms in 14 days causes rapid brain fatigue. Recruiters repeatedly filter for similar structures (Sliding Window, Two Pointers, Dynamic Programming basics).
+    
+Focus on mastering **2 complex problems** thoroughly per day. Write detailed documentation describing *why* specific optimizations succeed. This depth creates highly-engaging interview discussions!`,
+    category: "Interview / Placement",
+    tags: ["leetcode", "career", "preps", "algorithms"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 122,
+    author: "sneha_codes",
+    createdAt: "2026-06-16T04:20:00Z",
+    gotcha: "Do not blindly copy optimal code solutions of discuss boards. Formulate the raw brute force models first so you can explain transitions.",
+    code: `// Masters of sliding windows pattern
+class SlidingWindow {
+  // Solve: Max sum of subarray with size K
+  // Focus logic flow over memorized algorithms
+}`
+  },
+  {
+    id: "h26",
+    slug: "cgpa-gpt-honest-reframing",
+    title: "CGPA GPT: Recruiter-Safe Academic Reframing",
+    summary: "Frame a mediocre 7.5 CGPA in placement sheets to project strong focus on engineering components.",
+    body: `Having a 7.x CGPA can trigger automated CV filtering gates in Indian companies. 
+    
+**The Strategy:** Rather than presenting your cumulative grade, calculate your **Core Subject CGPA** (excluding administrative theory, values courses, chemistry, etc.) and state it clearly as \`Core CS Subject GPA: 8.9/10.0\`. This is mathematically accurate and focuses the recruiter directly on variables that solve actual product problems.`,
+    category: "Interview / Placement",
+    tags: ["placement", "gpa", "hack", "reframing"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 219,
+    author: "anshul_dev",
+    createdAt: "2026-06-21T11:45:00Z",
+    gotcha: "If company forms explicitly demand 'Cumulative GPA', you must input the official value to avoid verification rejections. Highlight subject GPAs in your resume highlight lines.",
+    code: `// Resumed template format
+- Cumulative GPA: 7.4 / 10.0
+- Computer Science Subject GPA: 8.8 / 10.0 (Data Structures, OS, Networking)`
+  },
+
+  // --- AI / LLM Free Tiers ---
+  {
+    id: "h27",
+    slug: "failover-chain-groq-together-huggingface",
+    title: "Unbreakable LLM Failover Chain (₹0 Limit)",
+    summary: "Chain multiple AI free API portals together to prevent failures during system evaluations.",
+    body: `Relying purely on a single free AI API (like Groq) exposes your demo to crash risks if rate limits trigger during a presentation.
+    
+**The Jugaad:** Build a recursive failover handler. If Groq triggers a 429 error, shift queries to **Together AI**, then downscale to **Hugging Inference API** as the ultimate stable fallback. Your application remains active during heavy loads.`,
+    category: "AI / LLM Free Tiers",
+    tags: ["groq", "ai", "llm", "failover"],
+    difficulty: "medium",
+    status: "active",
+    upvotes: 154,
+    author: "jugaad_god",
+    createdAt: "2026-06-22T01:00:00Z",
+    gotcha: "Different interfaces require slightly different structured system inputs or model tags. Map endpoints inside unified helper structures.",
+    code: `export async function queryLLMWithFallback(prompt: string): Promise<string> {
+  try {
+    return await queryGroq(prompt); // 1st Priority
+  } catch (err) {
+    try {
+      return await queryTogether(prompt); // 2nd Priority
+    } catch (err2) {
+      return await queryHuggingFace(prompt); // Ultimate stable fallback
+    }
+  }
+}`
+  },
+  {
+    id: "h28",
+    slug: "prompt-caching-localstorage-savings",
+    title: "₹0 Prompt Caching with LocalStorage",
+    summary: "Save precious API tokens by locally caching repetitive LLM outputs on user machines.",
+    body: `If users are testing features on your trial platform, they often ask similar questions or run the same inputs repeatedly. Resending prompts eats your free tokens.
+    
+**The Jugaad:** Hash the user prompt and store the generated LLM response inside the client's **LocalStorage**. Before key-firing an expensive server endpoint, check if the hashed prompt database exists.`,
+    category: "AI / LLM Free Tiers",
+    tags: ["ai", "prompt", "cache", "localstorage"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 129,
+    author: "amit_sharma",
+    createdAt: "2021-06-15T09:30:00Z",
+    gotcha: "Limit the prompt cache size parameters to avoid filling user storage limits (maximum allowed is ~5MB).",
+    code: `// Client prompt checking wrapper
+export async function getLLMResult(prompt: string) {
+  const hash = btoa(prompt); // Quick hash
+  const cached = localStorage.getItem(\`ai_cache:\${hash}\`);
+  if (cached) return JSON.parse(cached);
+  
+  const result = await fetchRealAIResult(prompt);
+  localStorage.setItem(\`ai_cache:\${hash}\`, JSON.stringify(result));
+  return result;
+}`
+  },
+  {
+    id: "h29",
+    slug: "claude-api-free-anthropic-console",
+    title: "Access Claude API Free via Console Credits",
+    summary: "Create development consoles to fetch $5-10 worth of top-tier Claude API credits for early testing.",
+    body: `Claude 3.5 Sonnet is arguably the best reasoning model for programming, but subscription portals lock you behind premium payment walls.
+    
+By initializing an **Anthropic Developer Console**, the platform often matches new developers with a complimentary $5 system credit. Use their API packages to compile outputs on demand.`,
+    category: "AI / LLM Free Tiers",
+    tags: ["claude", "anthropic", "ai", "credits"],
+    difficulty: "easy",
+    status: "active",
+    upvotes: 110,
+    author: "sneha_codes",
+    createdAt: "2026-06-20T08:00:00Z",
+    gotcha: "Requires active cell phone authentication. Keep an eye on system balance lines to prevent sudden shutdowns.",
+    code: `import { Anthropic } from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY, // Free dev credits
+});`
+  },
+  {
+    id: "h30",
+    slug: "embeddings-free-nomic-ollama",
+    title: "₹0 Local Vector Embeddings via Ollama + Nomic",
+    summary: "Build full RAG solutions locally without paying OpenAI or Pinecone for embedding calculations.",
+    body: `Calculating vector embeddings on thousands of documents using OpenAI API can cost you a pretty penny as database scales.
+    
+**The Jugaad:** Install **Ollama** on your development machine and run the **nomic-embed-text** model locally. It calculates high-quality embeddings on your own hardware for absolutely free, requiring zero external server calls!`,
+    category: "AI / LLM Free Tiers",
+    tags: ["ollama", "embeddings", "rag", "vector"],
+    difficulty: "cursed",
+    status: "active",
+    upvotes: 167,
+    author: "riya_tech",
+    createdAt: "2021-06-22T10:00:00Z",
+    gotcha: "Local generation requires substantial graphics card or CPU memory. Use small chunk splitters to keep execution reliable.",
+    code: `// Get local embeddings with Ollama
+async function getLocalEmbedding(text: string) {
+  const response = await fetch('http://localhost:11434/api/embeddings', {
+    method: 'POST',
+    body: JSON.stringify({
+      model: 'nomic-embed-text',
+      prompt: text
+    })
+  });
+  const data = await response.json();
+  return data.embedding; // Float32 array
+}`
+  }
+];

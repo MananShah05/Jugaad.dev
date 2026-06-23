@@ -1,0 +1,6 @@
+{
+  "name": "Jugaad.dev",
+  "description": "Indian developer hacks, workarounds, and zero-budget engineering. Ship first. Optimize never.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
